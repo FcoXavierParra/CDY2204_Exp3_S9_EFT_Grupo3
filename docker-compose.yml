@@ -1,0 +1,56 @@
+services:
+
+  # ── Broker de colas ──────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq-cursos
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── Microservicio core (dominio + Oracle + S3) ───────────────
+  cursos-service:
+    build: ./cursos-service
+    image: cursos-service:latest
+    container_name: cursos-service
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      ORACLE_JDBC_URL: "jdbc:oracle:thin:@${ORACLE_TNS_ALIAS:-oraclecloudfparradb_tp}?TNS_ADMIN=/app/wallet"
+    volumes:
+      - ./wallet:/app/wallet:ro
+    restart: unless-stopped
+
+  # ── BFF (frontend + orquestacion de colas) ───────────────────
+  bff-service:
+    build: ./bff-service
+    image: bff-service:latest
+    container_name: bff-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      CURSOS_SERVICE_URL: "http://cursos-service:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      cursos-service:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:

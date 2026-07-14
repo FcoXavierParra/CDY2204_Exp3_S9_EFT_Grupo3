@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Plataforma de Cursos en Línea — CDY2204 EFT</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- MSAL.js (Azure AD B2C) desde CDN -->
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🎓 Plataforma de Cursos en Línea</h1>
+    <p class="sub">CDY2204 — Evaluación Final Transversal · Frontend + BFF + RabbitMQ + Oracle + S3</p>
+    <div class="authbar">
+      <span id="userInfo" class="muted">No autenticado</span>
+      <button id="btnLogin">Iniciar sesión (Azure B2C)</button>
+      <button id="btnLogout" class="hidden">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>1. Cursos disponibles</h2>
+      <button id="btnCursos">Cargar cursos</button>
+      <pre id="outCursos" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>2. Crear curso <span class="tag">INSTRUCTOR</span></h2>
+      <input id="cCodigo" placeholder="código (ej. CN-101)"/>
+      <input id="cNombre" placeholder="nombre del curso"/>
+      <input id="cInstructor" placeholder="instructor"/>
+      <input id="cCupos" type="number" placeholder="cupos" value="30"/>
+      <button id="btnCrearCurso">Crear curso</button>
+      <pre id="outCrearCurso" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>3. Inscribirse → publica en la COLA <span class="tag">PRODUCTOR</span></h2>
+      <input id="iCurso" placeholder="código del curso a inscribir"/>
+      <button id="btnPublicar">Inscribirse (publicar en cola)</button>
+      <pre id="outPublicar" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>4. Procesar inscripción ← consume la COLA <span class="tag">CONSUMIDOR</span></h2>
+      <button id="btnConsumir">Consumir mensaje → guardar en Oracle</button>
+      <pre id="outConsumir" class="out"></pre>
+    </section>
+
+    <section class="card">
+      <h2>5. Matrículas persistidas (Oracle)</h2>
+      <button id="btnMatriculas">Cargar matrículas</button>
+      <pre id="outMatriculas" class="out"></pre>
+    </section>
+  </main>
+
+  <footer><p class="muted">Grupo 3 — Francisco Parra / Yahaira Rupay</p></footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

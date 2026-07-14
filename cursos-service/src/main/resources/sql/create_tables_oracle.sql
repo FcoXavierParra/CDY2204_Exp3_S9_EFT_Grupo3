@@ -1,0 +1,32 @@
+-- ================================================================
+--  CDY2204 EFT - Oracle Cloud (Autonomous DB) - cursos-service
+--  Respaldo del esquema. Con ddl-auto=update Hibernate lo crea solo.
+-- ================================================================
+
+CREATE SEQUENCE SEQ_CURSO START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE TABLE CURSO (
+    ID              NUMBER          NOT NULL,
+    CODIGO          VARCHAR2(40)    NOT NULL,
+    NOMBRE          VARCHAR2(200)   NOT NULL,
+    INSTRUCTOR      VARCHAR2(150)   NOT NULL,
+    DESCRIPCION     VARCHAR2(1000),
+    CUPOS           NUMBER          NOT NULL,
+    MATERIAL_S3KEY  VARCHAR2(500),
+    FECHA_CREACION  TIMESTAMP       NOT NULL,
+    CONSTRAINT PK_CURSO PRIMARY KEY (ID),
+    CONSTRAINT UQ_CURSO_CODIGO UNIQUE (CODIGO)
+);
+
+CREATE SEQUENCE SEQ_MATRICULA START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE TABLE MATRICULA (
+    ID                 NUMBER        NOT NULL,
+    CURSO_CODIGO       VARCHAR2(40)  NOT NULL,
+    CURSO_NOMBRE       VARCHAR2(200),
+    ESTUDIANTE_EMAIL   VARCHAR2(150) NOT NULL,
+    ESTUDIANTE_NOMBRE  VARCHAR2(150),
+    FECHA_MATRICULA    TIMESTAMP     NOT NULL,
+    ESTADO             VARCHAR2(20)  NOT NULL,
+    CONSTRAINT PK_MATRICULA PRIMARY KEY (ID)
+);
