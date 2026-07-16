@@ -1,13 +1,22 @@
 :root { --bg:#0f172a; --card:#1e293b; --accent:#0ea5e9; --ok:#22c55e; --txt:#e2e8f0; --muted:#94a3b8; }
 * { box-sizing: border-box; }
-body { margin:0; font-family: "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--txt); }
-header { padding:24px 32px; background:linear-gradient(135deg,#0c4a6e,#1e293b); }
-header h1 { margin:0 0 4px; font-size:24px; }
-.sub { margin:0; color:var(--muted); font-size:13px; }
+body { margin:0; font-family: "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--txt); overflow-x:hidden; }
+header { padding:22px 32px; background:linear-gradient(135deg,#0c4a6e,#1e293b); }
+header h1 { margin:0 0 4px; font-size:22px; }
+.sub { margin:0; color:var(--muted); font-size:12.5px; }
 .authbar { margin-top:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-main { padding:24px 32px; display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
-.card { background:var(--card); border:1px solid #334155; border-radius:12px; padding:18px; }
-.card h2 { margin:0 0 12px; font-size:16px; }
+main {
+  padding:24px 32px;
+  max-width:1500px; margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+  gap:18px; align-items:start;
+}
+.card {
+  background:var(--card); border:1px solid #334155; border-radius:12px; padding:18px;
+  display:flex; flex-direction:column;
+}
+.card h2 { margin:0 0 12px; font-size:15px; line-height:1.3; }
 .tag { background:var(--accent); color:#001; font-size:11px; padding:2px 8px; border-radius:10px; margin-left:6px; }
 input { display:block; width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #475569; background:#0f172a; color:var(--txt); }
 button { background:var(--accent); color:#001827; border:none; padding:9px 14px; border-radius:8px; font-weight:600; cursor:pointer; }
@@ -16,3 +25,22 @@ button:hover { filter:brightness(1.1); }
 .muted { color:var(--muted); }
 .hidden { display:none; }
 footer { padding:16px 32px; color:var(--muted); font-size:12px; }
+
+/* Mensajes de respuesta */
+.msg { padding:10px 12px; border-radius:8px; font-size:13px; font-weight:600; margin-top:10px; }
+.msg-ok  { background:rgba(34,197,94,.15);  border:1px solid #22c55e; color:#bbf7d0; }
+.msg-err { background:rgba(239,68,68,.15);  border:1px solid #ef4444; color:#fecaca; }
+.msg-info{ background:rgba(14,165,233,.15); border:1px solid #0ea5e9; color:#bae6fd; }
+
+/* Tablas */
+.tabla { width:100%; border-collapse:collapse; margin-top:10px; font-size:11.5px; table-layout:auto; }
+.tabla th, .tabla td { border:1px solid #334155; padding:6px 8px; text-align:left; vertical-align:top; }
+.tabla th { background:#0b1220; color:#cbd5e1; white-space:nowrap; }         /* encabezados en 1 línea */
+.tabla td { word-break:break-word; }                                        /* email largo se acomoda */
+.tabla td.fecha { white-space:nowrap; }                                     /* fecha en 1 línea */
+.badge { background:#22c55e; color:#04170a; padding:2px 8px; border-radius:10px; font-size:11px; white-space:nowrap; display:inline-block; }
+
+/* JSON técnico plegable */
+.jsonbox { margin-top:8px; }
+.jsonbox summary { cursor:pointer; color:var(--accent); font-size:12px; }
+.jsonbox pre { background:#0b1220; border:1px solid #334155; border-radius:8px; padding:10px; margin-top:6px; max-height:220px; overflow:auto; font-size:11px; white-space:pre-wrap; word-break:break-word; }

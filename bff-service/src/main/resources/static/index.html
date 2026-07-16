@@ -23,7 +23,7 @@
     <section class="card">
       <h2>1. Cursos disponibles</h2>
       <button id="btnCursos">Cargar cursos</button>
-      <pre id="outCursos" class="out"></pre>
+      <div id="outCursos" class="out"></div>
     </section>
 
     <section class="card">
@@ -33,26 +33,26 @@
       <input id="cInstructor" placeholder="instructor"/>
       <input id="cCupos" type="number" placeholder="cupos" value="30"/>
       <button id="btnCrearCurso">Crear curso</button>
-      <pre id="outCrearCurso" class="out"></pre>
+      <div id="outCrearCurso" class="out"></div>
     </section>
 
     <section class="card">
       <h2>3. Inscribirse → publica en la COLA <span class="tag">PRODUCTOR</span></h2>
       <input id="iCurso" placeholder="código del curso a inscribir"/>
       <button id="btnPublicar">Inscribirse (publicar en cola)</button>
-      <pre id="outPublicar" class="out"></pre>
+      <div id="outPublicar" class="out"></div>
     </section>
 
     <section class="card">
       <h2>4. Procesar inscripción ← consume la COLA <span class="tag">CONSUMIDOR</span></h2>
       <button id="btnConsumir">Consumir mensaje → guardar en Oracle</button>
-      <pre id="outConsumir" class="out"></pre>
+      <div id="outConsumir" class="out"></div>
     </section>
 
     <section class="card">
       <h2>5. Matrículas persistidas (Oracle)</h2>
       <button id="btnMatriculas">Cargar matrículas</button>
-      <pre id="outMatriculas" class="out"></pre>
+      <div id="outMatriculas" class="out"></div>
     </section>
   </main>
 
