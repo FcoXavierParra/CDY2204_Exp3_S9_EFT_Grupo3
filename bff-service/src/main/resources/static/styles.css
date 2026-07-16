@@ -21,7 +21,7 @@ main {
 input { display:block; width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #475569; background:#0f172a; color:var(--txt); }
 button { background:var(--accent); color:#001827; border:none; padding:9px 14px; border-radius:8px; font-weight:600; cursor:pointer; }
 button:hover { filter:brightness(1.1); }
-.out { background:#0b1220; border:1px solid #334155; border-radius:8px; padding:10px; margin-top:10px; max-height:240px; overflow:auto; font-size:12px; white-space:pre-wrap; word-break:break-word; }
+.out { background:#0b1220; border:1px solid #334155; border-radius:8px; padding:10px; margin-top:10px; max-height:420px; overflow:auto; font-size:13px; }
 .muted { color:var(--muted); }
 .hidden { display:none; }
 footer { padding:16px 32px; color:var(--muted); font-size:12px; }
