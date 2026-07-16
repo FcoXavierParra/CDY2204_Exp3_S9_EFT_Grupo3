@@ -78,6 +78,18 @@ public class BffController {
                     "mensaje", "Mensaje con error: derivado a la cola de errores (inscripciones.error.queue)",
                     "cursoCodigo", msg.getCursoCodigo()));
         }
+        // Enriquecer el nombre del curso (el mensaje de la cola solo trae el codigo)
+        if (msg.getCursoNombre() == null || msg.getCursoNombre().isBlank()) {
+            try {
+                for (Object o : cursosClient.listarCursos(jwt.getTokenValue())) {
+                    if (o instanceof Map<?, ?> c && msg.getCursoCodigo().equals(c.get("codigo"))) {
+                        Object nombre = c.get("nombre");
+                        if (nombre != null) msg.setCursoNombre(nombre.toString());
+                        break;
+                    }
+                }
+            } catch (Exception ignore) { /* si falla el lookup, se persiste solo con el codigo */ }
+        }
         Map<String, Object> matricula = cursosClient.crearMatricula(msg, jwt.getTokenValue());
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "mensaje", "Mensaje consumido de la cola y matricula persistida en Oracle",
