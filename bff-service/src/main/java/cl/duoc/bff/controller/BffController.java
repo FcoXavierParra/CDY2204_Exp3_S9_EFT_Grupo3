@@ -53,6 +53,7 @@ public class BffController {
                 .estudianteEmail(emailDe(jwt))
                 .estudianteNombre(jwt.getClaimAsString("name"))
                 .fechaSolicitud(LocalDateTime.now().toString())
+                .simularError("true".equalsIgnoreCase(req.getOrDefault("simularError", "false")))
                 .build();
         producerService.publicar(msg);
         return ResponseEntity.accepted().body(Map.of(
@@ -69,6 +70,13 @@ public class BffController {
         InscripcionMensaje msg = consumerService.consumirUno();
         if (msg == null) {
             return ResponseEntity.ok(Map.of("mensaje", "La cola esta vacia, no hay inscripciones por procesar"));
+        }
+        // Manejo de errores: mensaje marcado (o fallido) -> se deriva a la COLA 2 (DLQ)
+        if (msg.isSimularError()) {
+            producerService.enviarAError(msg);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(Map.of(
+                    "mensaje", "Mensaje con error: derivado a la cola de errores (inscripciones.error.queue)",
+                    "cursoCodigo", msg.getCursoCodigo()));
         }
         Map<String, Object> matricula = cursosClient.crearMatricula(msg, jwt.getTokenValue());
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(

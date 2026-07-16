@@ -16,4 +16,6 @@ public class InscripcionMensaje {
     private String estudianteEmail;
     private String estudianteNombre;
     private String fechaSolicitud;
+    /** Bandera de demostración: si es true, el consumidor deriva el mensaje a la cola de errores (DLQ). */
+    private boolean simularError;
 }
