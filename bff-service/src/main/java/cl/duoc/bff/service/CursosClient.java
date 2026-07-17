@@ -4,10 +4,12 @@ import cl.duoc.bff.dto.InscripcionMensaje;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
@@ -56,15 +58,18 @@ public class CursosClient {
     @SuppressWarnings("unchecked")
     public Map<String, Object> subirMaterial(Long cursoId, byte[] contenido, String filename,
                                              String contentType, String bearerToken) {
-        MultipartBodyBuilder mb = new MultipartBodyBuilder();
-        mb.part("archivo", new ByteArrayResource(contenido) {
+        ByteArrayResource recurso = new ByteArrayResource(contenido) {
             @Override public String getFilename() { return filename == null ? "material" : filename; }
-        }).contentType(contentType != null ? MediaType.parseMediaType(contentType) : MediaType.APPLICATION_OCTET_STREAM);
+        };
+        HttpHeaders partHeaders = new HttpHeaders();
+        partHeaders.setContentType(contentType != null ? MediaType.parseMediaType(contentType) : MediaType.APPLICATION_OCTET_STREAM);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("archivo", new HttpEntity<>(recurso, partHeaders));
         return cursosRestClient.post()
                 .uri("/api/cursos/{id}/material", cursoId)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(mb.build())
+                .body(body)
                 .retrieve()
                 .body(Map.class);
     }
