@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -123,20 +125,36 @@ public class BffController {
             @PathVariable String codigo,
             @RequestParam("archivo") MultipartFile archivo,
             @AuthenticationPrincipal Jwt jwt) throws IOException {
-        // El frontend trabaja con el codigo del curso; resolvemos su id en el core.
-        Long id = null;
-        for (Object o : cursosClient.listarCursos(jwt.getTokenValue())) {
-            if (o instanceof Map<?, ?> c && codigo.equals(c.get("codigo")) && c.get("id") instanceof Number n) {
-                id = n.longValue();
-                break;
-            }
-        }
-        if (id == null) {
-            throw new IllegalArgumentException("No existe un curso con codigo " + codigo);
-        }
+        Long id = resolverIdPorCodigo(codigo, jwt);
         Map<String, Object> res = cursosClient.subirMaterial(id, archivo.getBytes(),
                 archivo.getOriginalFilename(), archivo.getContentType(), jwt.getTokenValue());
         return ResponseEntity.ok(res);
+    }
+
+    @Operation(summary = "Ver/descargar el material de un curso desde S3 (ESTUDIANTE / INSTRUCTOR)")
+    @PreAuthorize("hasAnyRole('ESTUDIANTE','INSTRUCTOR')")
+    @GetMapping("/cursos/{codigo}/material")
+    public ResponseEntity<byte[]> verMaterial(@PathVariable String codigo, @AuthenticationPrincipal Jwt jwt) {
+        Long id = resolverIdPorCodigo(codigo, jwt);
+        try {
+            byte[] contenido = cursosClient.descargarMaterial(id, jwt.getTokenValue());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"material_" + codigo + "\"")
+                    .body(contenido);
+        } catch (HttpClientErrorException.NotFound e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /** El frontend trabaja con el codigo del curso; aqui resolvemos su id en el core. */
+    private Long resolverIdPorCodigo(String codigo, Jwt jwt) {
+        for (Object o : cursosClient.listarCursos(jwt.getTokenValue())) {
+            if (o instanceof Map<?, ?> c && codigo.equals(c.get("codigo")) && c.get("id") instanceof Number n) {
+                return n.longValue();
+            }
+        }
+        throw new IllegalArgumentException("No existe un curso con codigo " + codigo);
     }
 
     @Operation(summary = "Listar matriculas procesadas (proxy al cursos-service)")

@@ -131,6 +131,28 @@ $("btnMaterial").onclick = async () => {
   else render($("outMaterial"), { ok: false, title: `Error (${res.status})`, raw: data });
 };
 
+$("btnVerMaterial").onclick = async () => {
+  const codigo = $("vCurso").value.trim();
+  if (!codigo) { render($("outVerMaterial"), { ok: false, title: "Indica el código del curso" }); return; }
+  if (!idToken) await refreshToken();
+  const res = await fetch(APP_CONFIG.apiBase + "/cursos/" + encodeURIComponent(codigo) + "/material", {
+    headers: { "Authorization": "Bearer " + idToken }
+  });
+  if (res.status === 200) {
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "material_" + codigo; document.body.appendChild(a); a.click();
+    a.remove(); URL.revokeObjectURL(url);
+    render($("outVerMaterial"), { ok: true, title: `Material de ${esc(codigo)} descargado`, html: `<p class="muted">Archivo obtenido desde AWS S3 (vía BFF → core).</p>` });
+  } else if (res.status === 404) {
+    render($("outVerMaterial"), { ok: null, title: `El curso ${esc(codigo)} aún no tiene material cargado` });
+  } else {
+    let data = null; try { data = JSON.parse(await res.text()); } catch {}
+    render($("outVerMaterial"), { ok: false, title: `Error (${res.status})`, raw: data });
+  }
+};
+
 $("btnPublicar").onclick = async () => {
   const r = await api("POST", "/inscripciones/publicar", { cursoCodigo: $("iCurso").value });
   if (r.status === 202) render($("outPublicar"), { ok: true, title: `Inscripción a "${r.data.cursoCodigo}" enviada a la COLA 1`, html: `<p class="muted">Productor → RabbitMQ. Ahora usa "Consumir".</p>`, raw: r.data });

@@ -69,6 +69,15 @@ public class CursosClient {
                 .body(Map.class);
     }
 
+    /** Descarga (proxy) el material del curso desde el core (que lo lee de S3). */
+    public byte[] descargarMaterial(Long cursoId, String bearerToken) {
+        return cursosRestClient.get()
+                .uri("/api/cursos/{id}/material", cursoId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+                .retrieve()
+                .body(byte[].class);
+    }
+
     @SuppressWarnings("unchecked")
     public List<Object> listarCursos(String bearerToken) {
         return cursosRestClient.get()
