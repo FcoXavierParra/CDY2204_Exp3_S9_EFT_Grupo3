@@ -62,12 +62,22 @@ function renderUser() {
     $("btnLogin").classList.add("hidden");
     $("btnLogout").classList.remove("hidden");
   }
+  applyRole();
+}
+
+/** Perfil por rol: muestra las tarjetas de administración solo al INSTRUCTOR. */
+function applyRole() {
+  const claims = (account && account.idTokenClaims) || {};
+  const esInstructor = String(claims.extension_rol || "").toLowerCase() === "instructor";
+  document.querySelectorAll(".solo-instructor").forEach(el => el.classList.toggle("hidden", !esInstructor));
+  const hint = $("hintEstudiante");
+  if (hint) hint.classList.toggle("hidden", !account || esInstructor);
 }
 async function login() {
   try { setSession(await msalInstance.loginPopup({ scopes: APP_CONFIG.b2c.scopes })); }
   catch (e) { alert("Error de login: " + e.message); }
 }
-function logout() { msalInstance.logoutPopup(); }
+function logout() { msalInstance.logoutPopup().then(() => location.reload()).catch(() => location.reload()); }
 async function refreshToken() {
   try { idToken = (await msalInstance.acquireTokenSilent({ scopes: APP_CONFIG.b2c.scopes, account })).idToken; }
   catch (e) { console.warn("acquireTokenSilent falló", e); }
@@ -99,6 +109,26 @@ $("btnCrearCurso").onclick = async () => {
   if (r.status === 201) render($("outCrearCurso"), { ok: true, title: `Curso "${r.data.codigo}" creado (id ${r.data.id})`, raw: r.data });
   else if (r.status === 403) render($("outCrearCurso"), { ok: false, title: "403 · No tienes permiso (se requiere rol INSTRUCTOR)", raw: r.data });
   else render($("outCrearCurso"), { ok: false, title: `Error (${r.status})`, raw: r.data });
+};
+
+$("btnMaterial").onclick = async () => {
+  const codigo = $("mCurso").value.trim();
+  const file = $("mArchivo").files[0];
+  if (!codigo || !file) {
+    render($("outMaterial"), { ok: false, title: "Indica el código del curso y selecciona un archivo" });
+    return;
+  }
+  if (!idToken) await refreshToken();
+  const fd = new FormData();
+  fd.append("archivo", file);
+  const res = await fetch(APP_CONFIG.apiBase + "/cursos/" + encodeURIComponent(codigo) + "/material", {
+    method: "POST", headers: { "Authorization": "Bearer " + idToken }, body: fd
+  });
+  const text = await res.text();
+  let data; try { data = JSON.parse(text); } catch { data = text; }
+  if (res.status === 200) render($("outMaterial"), { ok: true, title: `Material subido a AWS S3: ${esc(file.name)}`, html: `<p class="muted">Guardado en el bucket S3 → <code>${esc((data && data.materialS3Key) || ("materiales/" + codigo + "/" + file.name))}</code></p>`, raw: data });
+  else if (res.status === 403) render($("outMaterial"), { ok: false, title: "403 · se requiere rol INSTRUCTOR", raw: data });
+  else render($("outMaterial"), { ok: false, title: `Error (${res.status})`, raw: data });
 };
 
 $("btnPublicar").onclick = async () => {

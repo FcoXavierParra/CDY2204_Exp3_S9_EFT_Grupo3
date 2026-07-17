@@ -10,12 +10,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +114,29 @@ public class BffController {
             @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(cursosClient.crearCurso(body, jwt.getTokenValue()));
+    }
+
+    @Operation(summary = "Subir material de un curso a AWS S3 (solo INSTRUCTOR)")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PostMapping(value = "/cursos/{codigo}/material", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> subirMaterial(
+            @PathVariable String codigo,
+            @RequestParam("archivo") MultipartFile archivo,
+            @AuthenticationPrincipal Jwt jwt) throws IOException {
+        // El frontend trabaja con el codigo del curso; resolvemos su id en el core.
+        Long id = null;
+        for (Object o : cursosClient.listarCursos(jwt.getTokenValue())) {
+            if (o instanceof Map<?, ?> c && codigo.equals(c.get("codigo")) && c.get("id") instanceof Number n) {
+                id = n.longValue();
+                break;
+            }
+        }
+        if (id == null) {
+            throw new IllegalArgumentException("No existe un curso con codigo " + codigo);
+        }
+        Map<String, Object> res = cursosClient.subirMaterial(id, archivo.getBytes(),
+                archivo.getOriginalFilename(), archivo.getContentType(), jwt.getTokenValue());
+        return ResponseEntity.ok(res);
     }
 
     @Operation(summary = "Listar matriculas procesadas (proxy al cursos-service)")

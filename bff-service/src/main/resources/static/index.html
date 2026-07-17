@@ -20,13 +20,15 @@
   </header>
 
   <main>
+    <p id="hintEstudiante" class="rolehint hidden">👀 Estás como <strong>estudiante</strong>: las opciones de administración de cursos son exclusivas del instructor.</p>
+
     <section class="card">
       <h2>1. Cursos disponibles</h2>
       <button id="btnCursos">Cargar cursos</button>
       <div id="outCursos" class="out"></div>
     </section>
 
-    <section class="card">
+    <section class="card solo-instructor hidden">
       <h2>2. Crear curso <span class="tag">INSTRUCTOR</span></h2>
       <input id="cCodigo" placeholder="código (ej. CN-101)"/>
       <input id="cNombre" placeholder="nombre del curso"/>
@@ -36,21 +38,29 @@
       <div id="outCrearCurso" class="out"></div>
     </section>
 
+    <section class="card solo-instructor hidden">
+      <h2>3. Subir material del curso → AWS S3 <span class="tag">INSTRUCTOR</span></h2>
+      <input id="mCurso" placeholder="código del curso (ej. CN-101)"/>
+      <input id="mArchivo" type="file"/>
+      <button id="btnMaterial">Subir material a S3</button>
+      <div id="outMaterial" class="out"></div>
+    </section>
+
     <section class="card">
-      <h2>3. Inscribirse → publica en la COLA <span class="tag">PRODUCTOR</span></h2>
+      <h2>4. Inscribirse → publica en la COLA <span class="tag">PRODUCTOR</span></h2>
       <input id="iCurso" placeholder="código del curso a inscribir"/>
       <button id="btnPublicar">Inscribirse (publicar en cola)</button>
       <div id="outPublicar" class="out"></div>
     </section>
 
     <section class="card">
-      <h2>4. Procesar inscripción ← consume la COLA <span class="tag">CONSUMIDOR</span></h2>
+      <h2>5. Procesar inscripción ← consume la COLA <span class="tag">CONSUMIDOR</span></h2>
       <button id="btnConsumir">Consumir mensaje → guardar en Oracle</button>
       <div id="outConsumir" class="out"></div>
     </section>
 
     <section class="card card-wide">
-      <h2>5. Matrículas persistidas (Oracle)</h2>
+      <h2>6. Matrículas persistidas (Oracle)</h2>
       <button id="btnMatriculas">Cargar matrículas</button>
       <div id="outMatriculas" class="out"></div>
     </section>

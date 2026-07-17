@@ -3,8 +3,10 @@ package cl.duoc.bff.service;
 import cl.duoc.bff.dto.InscripcionMensaje;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -46,6 +48,23 @@ public class CursosClient {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
+                .retrieve()
+                .body(Map.class);
+    }
+
+    /** Reenvía (proxy) el material multipart al core, que lo persiste en AWS S3. */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> subirMaterial(Long cursoId, byte[] contenido, String filename,
+                                             String contentType, String bearerToken) {
+        MultipartBodyBuilder mb = new MultipartBodyBuilder();
+        mb.part("archivo", new ByteArrayResource(contenido) {
+            @Override public String getFilename() { return filename == null ? "material" : filename; }
+        }).contentType(contentType != null ? MediaType.parseMediaType(contentType) : MediaType.APPLICATION_OCTET_STREAM);
+        return cursosRestClient.post()
+                .uri("/api/cursos/{id}/material", cursoId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(mb.build())
                 .retrieve()
                 .body(Map.class);
     }
