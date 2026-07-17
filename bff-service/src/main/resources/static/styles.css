@@ -47,6 +47,7 @@ footer { padding:16px 32px; color:var(--muted); font-size:12px; }
 .tabla td { word-break:break-word; }                                        /* email largo se acomoda */
 .tabla td.fecha { white-space:nowrap; }                                     /* fecha en 1 línea */
 .badge { background:#22c55e; color:#04170a; padding:2px 8px; border-radius:10px; font-size:11px; white-space:nowrap; display:inline-block; }
+.badge-off { background:#334155; color:#94a3b8; padding:2px 8px; border-radius:10px; font-size:11px; white-space:nowrap; display:inline-block; }
 
 /* JSON técnico plegable */
 .jsonbox { margin-top:8px; }

@@ -31,11 +31,17 @@ function render(el, { ok = true, title = "", html = "", raw = null } = {}) {
   el.innerHTML = out;
 }
 
-function tablaCursos(cursos) {
+function tablaCursos(cursos, inscritos) {
   if (!Array.isArray(cursos) || cursos.length === 0) return `<p class="muted">No hay cursos.</p>`;
-  const filas = cursos.map(c =>
-    `<tr><td>${esc(c.codigo)}</td><td>${esc(c.nombre)}</td><td>${esc(c.instructor)}</td><td>${esc(c.cupos)}</td></tr>`).join("");
-  return `<table class="tabla"><thead><tr><th>Código</th><th>Nombre</th><th>Instructor</th><th>Cupos</th></tr></thead><tbody>${filas}</tbody></table>`;
+  const mostrar = inscritos instanceof Set;   // solo se muestra para el estudiante
+  const filas = cursos.map(c => {
+    const col = !mostrar ? "" : (inscritos.has(c.codigo)
+      ? `<td><span class="badge">Inscrito</span></td>`
+      : `<td><span class="badge-off">No inscrito</span></td>`);
+    return `<tr><td>${esc(c.codigo)}</td><td>${esc(c.nombre)}</td><td>${esc(c.instructor)}</td><td>${esc(c.cupos)}</td>${col}</tr>`;
+  }).join("");
+  const th = mostrar ? `<th>Tu inscripción</th>` : "";
+  return `<table class="tabla"><thead><tr><th>Código</th><th>Nombre</th><th>Instructor</th><th>Cupos</th>${th}</tr></thead><tbody>${filas}</tbody></table>`;
 }
 
 function tablaMatriculas(ms) {
@@ -98,9 +104,18 @@ $("btnLogin").onclick = login;
 $("btnLogout").onclick = logout;
 
 $("btnCursos").onclick = async () => {
-  const r = await api("GET", "/cursos");
-  if (r.status === 200) render($("outCursos"), { ok: true, title: `${(r.data||[]).length} curso(s) disponibles`, html: tablaCursos(r.data), raw: r.data });
-  else render($("outCursos"), { ok: false, title: `Error (${r.status})`, raw: r.data });
+  const claims = (account && account.idTokenClaims) || {};
+  const esInstructor = String(claims.extension_rol || "").toLowerCase() === "instructor";
+  const [rc, rm] = await Promise.all([api("GET", "/cursos"), esInstructor ? Promise.resolve({ data: [] }) : api("GET", "/matriculas")]);
+  if (rc.status === 200) {
+    let inscritos = null;
+    if (!esInstructor) {
+      const myEmail = ((claims.emails && claims.emails[0]) || account.username || "").toLowerCase();
+      inscritos = new Set();
+      if (Array.isArray(rm.data)) rm.data.forEach(m => { if (String(m.estudianteEmail || "").toLowerCase() === myEmail) inscritos.add(m.cursoCodigo); });
+    }
+    render($("outCursos"), { ok: true, title: `${(rc.data||[]).length} curso(s) disponibles`, html: tablaCursos(rc.data, inscritos), raw: rc.data });
+  } else render($("outCursos"), { ok: false, title: `Error (${rc.status})`, raw: rc.data });
 };
 
 $("btnCrearCurso").onclick = async () => {
